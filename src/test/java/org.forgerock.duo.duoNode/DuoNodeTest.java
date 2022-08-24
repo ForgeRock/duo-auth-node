@@ -9,7 +9,7 @@
 package org.forgerock.duo;
 import org.forgerock.openam.auth.node.api.ExternalRequestContext.Builder;
 import org.forgerock.util.i18n.PreferredLocales;
-import org.forgerock.duo.DuoNode;
+import org.forgerock.duo.duoNode.DuoNode;
 import static org.forgerock.json.JsonValue.*;
 import org.forgerock.json.JsonValue;
 import static java.util.Collections.emptyList;
