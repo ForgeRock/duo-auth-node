@@ -1,4 +1,4 @@
-package org.forgerock.am.duoNode;
+package org.forgerock.duo.duoNode;
 
 final class DuoConstants {
     static final String SETUP_DOM_SCRIPT =

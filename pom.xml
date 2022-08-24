@@ -28,23 +28,29 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <groupId>org.forgerock.am</groupId>
+    <groupId>org.forgerock.duo</groupId>
     <artifactId>duoNode</artifactId>
 
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <name>Duo Node</name>
     <description>An Authentication Tree Node for ForgeRock's Identity Platform which integrates Duo's Web SDK
     </description>
 
     <repositories>
         <repository>
+            <id>DuoWeb</id>
+            <name>DuoWeb</name>
+            <url>https://maven.onehippo.com/maven2/</url>
+        </repository>
+        <repository>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
             <id>forgerock-private-releases</id>
             <name>ForgeRock Private Release Repository</name>
-            <url>http://maven.forgerock.org/repo/private-releases</url>
+            <url>https://maven.forgerock.org/repo/private-releases</url>
         </repository>
+
     </repositories>
 
     <dependencyManagement>
@@ -78,8 +84,9 @@
         <dependency>
             <groupId>com.duosecurity</groupId>
             <artifactId>DuoWeb</artifactId>
-            <version>1.3</version>
+            <version>1.1-20150226</version>
         </dependency>
+
     </dependencies>
 
     <build>
