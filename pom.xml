@@ -26,25 +26,34 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>4.12</junit.version>
+        <mockito.version>3.12.4</mockito.version>
+        <mockito-testng.version>0.4.13</mockito-testng.version>
     </properties>
 
-    <groupId>org.forgerock.am</groupId>
+    <groupId>org.forgerock.duo</groupId>
     <artifactId>duoNode</artifactId>
 
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <name>Duo Node</name>
     <description>An Authentication Tree Node for ForgeRock's Identity Platform which integrates Duo's Web SDK
     </description>
 
     <repositories>
         <repository>
+            <id>DuoWeb</id>
+            <name>DuoWeb</name>
+            <url>https://maven.onehippo.com/maven2/</url>
+        </repository>
+        <repository>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
             <id>forgerock-private-releases</id>
             <name>ForgeRock Private Release Repository</name>
-            <url>http://maven.forgerock.org/repo/private-releases</url>
+            <url>https://maven.forgerock.org/repo/private-releases</url>
         </repository>
+
     </repositories>
 
     <dependencyManagement>
@@ -76,10 +85,53 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-monitoring-test-assertions</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.commons</groupId>
+            <artifactId>forgerock-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.forgerock.commons/forgerock-util -->
+
+
+
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-core</artifactId>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-shared</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-testng</artifactId>
+            <version>${mockito-testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.duosecurity</groupId>
             <artifactId>DuoWeb</artifactId>
-            <version>1.3</version>
+            <version>1.1-20150226</version>
         </dependency>
+
     </dependencies>
 
     <build>

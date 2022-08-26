@@ -14,4 +14,4 @@
 # Copyright 2017-2018 ForgeRock AS.
 #
 
-org.forgerock.am.duoNode.DuoNodePlugin
+org.forgerock.duo.duoNode.DuoNodePlugin

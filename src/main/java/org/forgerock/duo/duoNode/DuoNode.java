@@ -14,9 +14,9 @@
  * Copyright 2018 ForgeRock AS.
  */
 
-package org.forgerock.am.duoNode;
+package org.forgerock.duo.duoNode;
 
-import static org.forgerock.am.duoNode.DuoConstants.*;
+import static org.forgerock.duo.duoNode.DuoConstants.*;
 import static org.forgerock.openam.auth.node.api.Action.send;
 
 import com.duosecurity.duoweb.DuoWeb;
@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Node.Metadata(outcomeProvider = AbstractDecisionNode.OutcomeProvider.class,
-        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication"})
+        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication", "partner"})
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger("amAuth");

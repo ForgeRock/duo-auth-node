@@ -14,7 +14,7 @@
  * Copyright 2018 ForgeRock AS.
  */
 
-package org.forgerock.am.duoNode;
+package org.forgerock.duo.duoNode;
 
 import java.util.Collections;
 import java.util.Map;
