@@ -29,6 +29,7 @@
         <junit.version>4.12</junit.version>
         <mockito.version>3.12.4</mockito.version>
         <mockito-testng.version>0.4.13</mockito-testng.version>
+        <forgerockDistMgmtReleasesUrl>https://maven.forgerock.org/repo/internal-releases</forgerockDistMgmtReleasesUrl>
     </properties>
 
     <groupId>org.forgerock.duo</groupId>
@@ -38,6 +39,17 @@
     <name>Duo Node</name>
     <description>An Authentication Tree Node for ForgeRock's Identity Platform which integrates Duo's Web SDK
     </description>
+
+    <distributionManagement>
+        <repository>
+            <id>forgerock-internal-snapshots</id>
+            <name>ForgeRock Internal Snapshots Repository</name>
+            <url>https://maven.forgerock.org/repo/internal-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
@@ -55,6 +67,8 @@
         </repository>
 
     </repositories>
+
+
 
     <dependencyManagement>
         <dependencies>
