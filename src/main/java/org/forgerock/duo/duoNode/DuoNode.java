@@ -37,10 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Node.Metadata(outcomeProvider = AbstractDecisionNode.OutcomeProvider.class,
-        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication", "partner"})
+        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication", "marketplace", "trustnetwork"})
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger("amAuth");
+    private String loggerPrefix = "[Duo Node][Partner]";
     private String iKey;
     private String sKey;
     private String apiHostName;
@@ -92,11 +93,12 @@ public class DuoNode extends AbstractDecisionNode {
         String username = context.sharedState.get(SharedStateConstants.USERNAME).asString().toLowerCase();
 
         if (context.hasCallbacks()) {
-            logger.debug("Duo Callbacks Received");
+            logger.debug(loggerPrefix + "Duo Callbacks Received");
             String signatureResponse = context.getCallback(HiddenValueCallback.class).get().getValue();
             try {
                 return goTo(username.equals(DuoWeb.verifyResponse(iKey, sKey, aKey, signatureResponse))).build();
             } catch (DuoWebException | NoSuchAlgorithmException | InvalidKeyException | IOException e) {
+                logger.error(loggerPrefix+ ":");
                 e.printStackTrace();
                 return goTo(false).build();
             }
@@ -105,7 +107,7 @@ public class DuoNode extends AbstractDecisionNode {
     }
 
     private Action buildCallbacks(String username) {
-        logger.debug("Sending Duo Callbacks to client");
+        logger.debug(loggerPrefix + "Sending Duo Callbacks to client");
         return send(new ArrayList<Callback>() {{
             add(new ScriptTextOutputCallback(String.format(SETUP_DOM_SCRIPT, duoJavascriptUrl) + STYLE_SCRIPT +
                     String.format(INIT_SCRIPT, apiHostName, DuoWeb.signRequest(iKey, sKey, aKey, username))));
