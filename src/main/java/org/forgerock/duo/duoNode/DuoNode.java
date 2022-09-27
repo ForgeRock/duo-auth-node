@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Node.Metadata(outcomeProvider = AbstractDecisionNode.OutcomeProvider.class,
-        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication", "partner"})
+        configClass = DuoNode.Config.class, tags = {"mfa", "multi-factor authentication", "marketplace", "trustnetwork"})
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger("amAuth");
