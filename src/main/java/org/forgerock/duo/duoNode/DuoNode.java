@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger("amAuth");
-    private String loggerPrefix = "[Duo Node][Partner]";
+    private String loggerPrefix = "[Duo Node][Partner] ";
     private String iKey;
     private String sKey;
     private String apiHostName;
