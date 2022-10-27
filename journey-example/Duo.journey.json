@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "origin": "",
+    "originAmVersion": "7.3.0",
+    "exportedBy": "tyler.gelinas@forgerock.com",
+    "exportDate": "2022-10-26T22:12:00.334Z",
+    "exportTool": "frodo",
+    "exportToolVersion": "v0.12.4 [v18.5.0]"
+  },
+  "innerNodes": {
+    "581513b4-deb1-4198-b27e-7f86b433cfc8": {
+      "_id": "581513b4-deb1-4198-b27e-7f86b433cfc8",
+      "_rev": "698758487",
+      "_type": {
+        "_id": "UsernameCollectorNode",
+        "name": "Username Collector",
+        "collection": true
+      },
+      "_outcomes": [
+        {
+          "id": "outcome",
+          "displayName": "Outcome"
+        }
+      ]
+    },
+    "03b49af4-53bf-4191-b5c4-0d4b41c43f58": {
+      "_id": "03b49af4-53bf-4191-b5c4-0d4b41c43f58",
+      "_rev": "-1920487419",
+      "_type": {
+        "_id": "PasswordCollectorNode",
+        "name": "Password Collector",
+        "collection": true
+      },
+      "_outcomes": [
+        {
+          "id": "outcome",
+          "displayName": "Outcome"
+        }
+      ]
+    }
+  },
+  "nodes": {
+    "54157639-680e-45b2-9f81-58e4ba458f17": {
+      "_id": "54157639-680e-45b2-9f81-58e4ba458f17",
+      "_rev": "-391058898",
+      "nodes": [
+        {
+          "_id": "581513b4-deb1-4198-b27e-7f86b433cfc8",
+          "nodeType": "UsernameCollectorNode",
+          "displayName": "Username Collector"
+        },
+        {
+          "_id": "03b49af4-53bf-4191-b5c4-0d4b41c43f58",
+          "nodeType": "PasswordCollectorNode",
+          "displayName": "Password Collector"
+        }
+      ],
+      "pageDescription": {},
+      "pageHeader": {},
+      "_type": {
+        "_id": "PageNode",
+        "name": "Page Node",
+        "collection": true
+      },
+      "_outcomes": [
+        {
+          "id": "outcome",
+          "displayName": "Outcome"
+        }
+      ]
+    },
+    "f5e0edfb-74e5-4c68-a2e6-66816e9a3346": {
+      "_id": "f5e0edfb-74e5-4c68-a2e6-66816e9a3346",
+      "_rev": "826011848",
+      "_type": {
+        "_id": "DataStoreDecisionNode",
+        "name": "Data Store Decision",
+        "collection": true
+      },
+      "_outcomes": [
+        {
+          "id": "true",
+          "displayName": "True"
+        },
+        {
+          "id": "false",
+          "displayName": "False"
+        }
+      ]
+    },
+    "08118d0b-57f0-46ba-bc84-92ed689eb7be": {
+      "_id": "08118d0b-57f0-46ba-bc84-92ed689eb7be",
+      "_rev": "-986729225",
+      "aKey": "",
+      "duoJavascriptUrl": "https://api.duosecurity.com/frame/hosted/Duo-Web-v2.min.js",
+      "apiHostName": "",
+      "sKey": "",
+      "iKey": "",
+      "_type": {
+        "_id": "DuoNode",
+        "name": "Duo Node",
+        "collection": true
+      },
+      "_outcomes": [
+        {
+          "id": "true",
+          "displayName": "True"
+        },
+        {
+          "id": "false",
+          "displayName": "False"
+        }
+      ]
+    }
+  },
+  "scripts": {},
+  "emailTemplates": {},
+  "socialIdentityProviders": {},
+  "themes": [],
+  "saml2Entities": {},
+  "circlesOfTrust": {},
+  "tree": {
+    "_id": "Duo",
+    "_rev": "18861722",
+    "identityResource": "managed/alpha_user",
+    "uiConfig": {
+      "categories": "[]"
+    },
+    "entryNodeId": "54157639-680e-45b2-9f81-58e4ba458f17",
+    "nodes": {
+      "54157639-680e-45b2-9f81-58e4ba458f17": {
+        "x": 176,
+        "y": 205.015625,
+        "connections": {
+          "outcome": "f5e0edfb-74e5-4c68-a2e6-66816e9a3346"
+        },
+        "nodeType": "PageNode",
+        "displayName": "Page Node"
+      },
+      "f5e0edfb-74e5-4c68-a2e6-66816e9a3346": {
+        "x": 419,
+        "y": 234.015625,
+        "connections": {
+          "true": "08118d0b-57f0-46ba-bc84-92ed689eb7be",
+          "false": "e301438c-0bd0-429c-ab0c-66126501069a"
+        },
+        "nodeType": "DataStoreDecisionNode",
+        "displayName": "Data Store Decision"
+      },
+      "08118d0b-57f0-46ba-bc84-92ed689eb7be": {
+        "x": 834,
+        "y": 249.015625,
+        "connections": {
+          "true": "70e691a5-1e33-4ac3-a356-e7b6d60d92e0",
+          "false": "e301438c-0bd0-429c-ab0c-66126501069a"
+        },
+        "nodeType": "DuoNode",
+        "displayName": "Duo Node"
+      }
+    },
+    "staticNodes": {
+      "startNode": {
+        "x": 50,
+        "y": 250
+      },
+      "70e691a5-1e33-4ac3-a356-e7b6d60d92e0": {
+        "x": 500,
+        "y": 50
+      },
+      "e301438c-0bd0-429c-ab0c-66126501069a": {
+        "x": 880,
+        "y": 450
+      }
+    },
+    "enabled": true
+  }
+}
