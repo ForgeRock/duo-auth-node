@@ -1,6 +1,6 @@
 {
   "meta": {
-    "origin": "https://openam-daon-tntp.forgeblocks.com/am",
+    "origin": "",
     "originAmVersion": "7.3.0",
     "exportedBy": "tyler.gelinas@forgerock.com",
     "exportDate": "2022-10-26T22:12:00.334Z",
@@ -93,7 +93,7 @@
       "_rev": "-986729225",
       "aKey": "",
       "duoJavascriptUrl": "https://api.duosecurity.com/frame/hosted/Duo-Web-v2.min.js",
-      "apiHostName": "api-1c51f0f7.duosecurity.com",
+      "apiHostName": "",
       "sKey": "",
       "iKey": "",
       "_type": {
