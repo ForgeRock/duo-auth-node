@@ -15,7 +15,7 @@
 -->
 # Duo Node
 
-A Duo integration for ForgeRock's Identity Platform 6.0 and above. This integration handles:
+A Duo integration for ForgeRock's Identity Platform 7.0 and ForgeRock Identity Cloud. This integration handles:
 1. Registration of the users device
 2. Second factor authentication
 3. Device Management (if applicable) 
@@ -54,7 +54,7 @@ print hashlib.sha1(os.urandom(32)).hexdigest()
 
 
 **Usage**
-1. Log into the Tree that was created in the steps above by going to /openam/XUI/#login&service={{Tree_Name}}.
+1. Log into the Tree that was created in the steps above by going to https://<url>/am/XUI/?realm=alpha&authIndexType=service&authIndexValue=Duo
 2. Log in the your ForgeRock username and password.
 ![alt text](https://github.com/ForgeRock/duo-auth-node/blob/master/images/Access1.png?raw=true "Access 1")
 3. Follow the prompts to register a new device or if you've already registered, use Duo to log in.
