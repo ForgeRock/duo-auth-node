@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 @Node.Metadata(outcomeProvider = DuoNode.OutcomeProvider.class,
-        configClass = DuoNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
+        configClass = DuoNode.Config.class, tags = {"multi-factor authentication", "marketplace"})
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger("amAuth");
