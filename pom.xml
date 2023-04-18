@@ -157,19 +157,6 @@
             <artifactId>duo-universal-sdk</artifactId>
             <version>1.1.3</version>
         </dependency>
-        <dependency>
-            <groupId>com.duosecurity</groupId>
-            <artifactId>duo-client</artifactId>
-            <version>0.5.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit -->
-        <dependency>
-            <groupId>com.squareup.retrofit2</groupId>
-            <artifactId>retrofit</artifactId>
-            <version>2.9.0</version>
-        </dependency>
-
-
     </dependencies>
 
     <build>

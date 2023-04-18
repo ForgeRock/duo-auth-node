@@ -9,13 +9,15 @@ import com.sun.identity.shared.Constants;
 import com.sun.identity.sm.RequiredValueValidator;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
 import org.forgerock.openam.auth.node.api.*;
 import org.forgerock.openam.core.CoreWrapper;
 import org.forgerock.util.i18n.PreferredLocales;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 @Node.Metadata(outcomeProvider = DuoUniversalPromptNode.OutcomeProvider.class, configClass = DuoUniversalPromptNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
@@ -92,9 +94,12 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
             return Action.send(redirectCallback).build();
         } catch(Exception ex) {
-            logger.error(loggerPrefix + "Exception occurred");
-            ex.printStackTrace();
-            context.sharedState.put("Exception", ex.toString());
+            logger.error(loggerPrefix + "Exception occurred: " + ex.getStackTrace());
+            context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            ex.printStackTrace(pw);
+            context.getStateFor(this).putShared(loggerPrefix + "StackTrace", new Date() + ": " + sw.toString());
             return Action.goTo("error").build();
         }
     }
