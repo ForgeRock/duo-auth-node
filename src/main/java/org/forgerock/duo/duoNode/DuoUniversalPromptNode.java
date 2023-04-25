@@ -27,9 +27,9 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         OPEN,
     }
 
-    private final Logger logger = LoggerFactory.getLogger("amAuth");
+    private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
 
-    private String loggerPrefix = "[Duo Universal Prompt Node][Partner] ";
+    private String loggerPrefix = "[Duo Universal Prompt][Partner] ";
 
     private Client duoClient;
     private String clientId;
