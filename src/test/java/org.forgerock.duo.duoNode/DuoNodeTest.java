@@ -6,7 +6,7 @@
  * to such license between the licensee and ForgeRock AS.
  */
 
-package org.forgerock.duo;
+package org.forgerock.duo.duoNode;
 import org.forgerock.openam.auth.node.api.ExternalRequestContext.Builder;
 import org.forgerock.util.i18n.PreferredLocales;
 import org.forgerock.duo.duoNode.DuoNode;

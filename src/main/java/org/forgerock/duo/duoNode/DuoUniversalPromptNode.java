@@ -1,5 +1,31 @@
 package org.forgerock.duo.duoNode;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javax.inject.Inject;
+
+import org.forgerock.json.JsonValue;
+import org.forgerock.openam.annotations.sm.Attribute;
+import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
+import org.forgerock.openam.auth.node.api.Action;
+import org.forgerock.openam.auth.node.api.Node;
+import org.forgerock.openam.auth.node.api.NodeProcessException;
+import org.forgerock.openam.auth.node.api.NodeState;
+import org.forgerock.openam.auth.node.api.SharedStateConstants;
+import org.forgerock.openam.auth.node.api.TreeContext;
+import org.forgerock.openam.core.CoreWrapper;
+import org.forgerock.util.i18n.PreferredLocales;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.duosecurity.Client;
 import com.duosecurity.model.Token;
 import com.google.inject.assistedinject.Assisted;
@@ -7,18 +33,6 @@ import com.iplanet.am.util.SystemProperties;
 import com.sun.identity.authentication.spi.RedirectCallback;
 import com.sun.identity.shared.Constants;
 import com.sun.identity.sm.RequiredValueValidator;
-import org.forgerock.json.JsonValue;
-import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.*;
-import org.forgerock.openam.core.CoreWrapper;
-import org.forgerock.util.i18n.PreferredLocales;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
 
 @Node.Metadata(outcomeProvider = DuoUniversalPromptNode.OutcomeProvider.class, configClass = DuoUniversalPromptNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
 public class DuoUniversalPromptNode extends AbstractDecisionNode {
@@ -29,7 +43,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
 
-    private String loggerPrefix = "[Duo Universal Prompt][Partner] ";
+    private String loggerPrefix = "[Duo Universal Prompt][Marketplace] ";
 
     private Client duoClient;
     private String clientId;
@@ -53,8 +67,9 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         try {
             logger.debug(loggerPrefix + "Started");
             Map<String, List<String>> parameters = context.request.parameters;
-            JsonValue sharedState = context.sharedState;
-            String userReference = sharedState.get(SharedStateConstants.USERNAME).asString().toLowerCase();
+            
+            NodeState ns = context.getStateFor(this);
+            String userReference = ns.get(SharedStateConstants.USERNAME).asString().toLowerCase();
 
             try {
                 duoClient.healthCheck();
@@ -72,7 +87,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
                     DuoUniversalPromptConstants.RESP_STATE)) {
 
                 try {
-                    Boolean authenticated = validateCallback(parameters, sharedState, userReference);
+                    Boolean authenticated = validateCallback(parameters, ns, userReference);
 
                     return goTo(authenticated).build();
                 } catch (InvalidStateError e) {
@@ -80,12 +95,12 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
                     logger.warn(loggerPrefix + e.getMessage());
 
                     // Clear the session out & let the rest of the method re-do the Duo redirect.
-                    sharedState.remove(DuoUniversalPromptConstants.SESSION_STATE);
+                    ns.remove(DuoUniversalPromptConstants.SESSION_STATE);
                 }
             }
 
             String state = duoClient.generateState();
-            sharedState.put(DuoUniversalPromptConstants.SESSION_STATE, state);
+            ns.putShared(DuoUniversalPromptConstants.SESSION_STATE, state);
 
             String duoUrl = createDuoAuthUrl(userReference, state);
 
@@ -128,7 +143,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
      * Throws an InvalidStateError if the session/URL params don't match. This is going to be caused by an expired
      * session, or by somebody trying to spoof a Duo response by manipulating the URL.
      */
-    private Boolean validateCallback(Map<String, List<String>> parameters, JsonValue sharedState, String userReference) throws InvalidStateError, NodeProcessException {
+    private Boolean validateCallback(Map<String, List<String>> parameters, NodeState sharedState, String userReference) throws InvalidStateError, NodeProcessException {
         if (! sharedState.isDefined(DuoUniversalPromptConstants.SESSION_STATE)) {
             throw new InvalidStateError(loggerPrefix + "Detected Duo callback without initialized session. This may be a spoofing attempt (or a timed out session).");
         }
