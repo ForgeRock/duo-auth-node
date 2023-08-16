@@ -192,6 +192,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             return FailureModes.CLOSED;
         }
 
+        //TODO This is not working properly in the cloud
         @Attribute(order = 500, validators = RequiredValueValidator.class)
         default String callbackUri() {
             final String protocol = SystemProperties.get(Constants.AM_SERVER_PROTOCOL);
