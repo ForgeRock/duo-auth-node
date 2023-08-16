@@ -43,7 +43,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
 
-    private String loggerPrefix = "[Duo Universal Prompt][Marketplace] ";
+    private String loggerPrefix = "[Duo Universal Prompt]" + DuoNodePlugin.logAppender;
 
     private Client duoClient;
     private String clientId;

@@ -56,7 +56,7 @@ import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
 public class DuoNode extends AbstractDecisionNode {
 
     private final Logger logger = LoggerFactory.getLogger(DuoNode.class);
-    private String loggerPrefix = "[Duo][Marketplace] ";
+    private String loggerPrefix = "[Duo]" + DuoNodePlugin.logAppender;
     private String iKey;
     private String sKey;
     private String apiHostName;

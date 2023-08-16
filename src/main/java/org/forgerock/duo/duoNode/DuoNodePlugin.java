@@ -59,7 +59,8 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class DuoNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "2.3.9";
+	static private String currentVersion = "2.3.10";
+	static final String logAppender = "[Version: " + currentVersion + "][Marketplace] ";
 	
     /** 
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and
