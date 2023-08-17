@@ -16,39 +16,47 @@
 
 package org.forgerock.duo.duoNode;
 
-import static org.forgerock.duo.duoNode.DuoConstants.*;
+import static org.forgerock.duo.duoNode.DuoConstants.INIT_SCRIPT;
+import static org.forgerock.duo.duoNode.DuoConstants.SETUP_DOM_SCRIPT;
+import static org.forgerock.duo.duoNode.DuoConstants.STYLE_SCRIPT;
 import static org.forgerock.openam.auth.node.api.Action.send;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.security.auth.callback.Callback;
+
+import org.forgerock.json.JsonValue;
+import org.forgerock.openam.annotations.sm.Attribute;
+import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
+import org.forgerock.openam.auth.node.api.Action;
+import org.forgerock.openam.auth.node.api.Node;
+import org.forgerock.openam.auth.node.api.NodeProcessException;
+import org.forgerock.openam.auth.node.api.SharedStateConstants;
+import org.forgerock.openam.auth.node.api.TreeContext;
+import org.forgerock.openam.core.CoreWrapper;
+import org.forgerock.util.i18n.PreferredLocales;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.duosecurity.duoweb.DuoWeb;
 import com.duosecurity.duoweb.DuoWebException;
 import com.google.inject.assistedinject.Assisted;
 import com.sun.identity.authentication.callbacks.HiddenValueCallback;
 import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.security.auth.callback.Callback;
-import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.*;
-import org.forgerock.openam.core.CoreWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.forgerock.json.JsonValue;
-import java.util.Arrays;
-import org.forgerock.util.i18n.PreferredLocales;
-import java.util.Collections;
-import org.forgerock.openam.auth.node.api.OutcomeProvider;
-import java.util.List;
-import java.util.ResourceBundle;
 
 @Node.Metadata(outcomeProvider = DuoNode.OutcomeProvider.class,
         configClass = DuoNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
 public class DuoNode extends AbstractDecisionNode {
 
-    private final Logger logger = LoggerFactory.getLogger("amAuth");
-    private String loggerPrefix = "[Duo Node][Partner] ";
+    private final Logger logger = LoggerFactory.getLogger(DuoNode.class);
+    private String loggerPrefix = "[Duo]" + DuoNodePlugin.logAppender;
     private String iKey;
     private String sKey;
     private String apiHostName;
@@ -98,24 +106,27 @@ public class DuoNode extends AbstractDecisionNode {
     @Override
     public Action process(TreeContext context) throws NodeProcessException {
         try {
-            String username = context.sharedState.get(SharedStateConstants.USERNAME).asString().toLowerCase();
+            String username = context.getStateFor(this).get(SharedStateConstants.USERNAME).asString().toLowerCase();
 
             if (context.hasCallbacks()) {
                 logger.debug(loggerPrefix + "Duo Callbacks Received");
                 String signatureResponse = context.getCallback(HiddenValueCallback.class).get().getValue();
                 try {
                     return Action.goTo(String.valueOf(username.equals(DuoWeb.verifyResponse(iKey, sKey, aKey, signatureResponse)))).build();
-                } catch (DuoWebException | NoSuchAlgorithmException | InvalidKeyException | IOException e) {
-                    logger.error(loggerPrefix+ ":");
-                    e.printStackTrace();
+                } catch (DuoWebException e) {
+                    logger.error(loggerPrefix+ ": " + e.getMessage());
+                    logger.error(loggerPrefix + "Exception occurred: " + e.getStackTrace());
                     return Action.goTo("false").build();
                 }
             }
             return buildCallbacks(username);
         } catch(Exception ex) {
-            logger.error(loggerPrefix + "Exception occurred");
-            ex.printStackTrace();
-            context.sharedState.put("Exception", ex.toString());
+			logger.error(loggerPrefix + "Exception occurred: " + ex.getStackTrace());
+			context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			ex.printStackTrace(pw);
+			context.getStateFor(this).putShared(loggerPrefix + "StackTracke", new Date() + ": " + sw.toString());
             return Action.goTo("error").build();
         }
     }
@@ -136,12 +147,11 @@ public class DuoNode extends AbstractDecisionNode {
         static final String SUCCESS_OUTCOME = "true";
         static final String ERROR_OUTCOME = "error";
         static final String FALSE_OUTCOME = "false";
-        private static final String BUNDLE = DuoNode.class.getName();
 
         @Override
         public List<Outcome> getOutcomes(PreferredLocales locales, JsonValue nodeAttributes) {
 
-            ResourceBundle bundle = locales.getBundleInPreferredLocale(BUNDLE, OutcomeProvider.class.getClassLoader());
+    
 
             List<Outcome> results = new ArrayList<>(
                     Arrays.asList(

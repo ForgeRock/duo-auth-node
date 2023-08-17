@@ -19,6 +19,7 @@ package org.forgerock.duo.duoNode;
 import java.util.Collections;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import org.forgerock.openam.auth.node.api.AbstractNodeAmPlugin;
 import org.forgerock.openam.auth.node.api.Node;
 import org.forgerock.openam.plugins.PluginException;
@@ -58,7 +59,8 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class DuoNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "1.1.5";
+	static private String currentVersion = "2.3.12";
+	static final String logAppender = "[Version: " + currentVersion + "][Marketplace] ";
 	
     /** 
      * Specify the Map of list of node classes that the plugin is providing. These will then be installed and
@@ -68,8 +70,8 @@ public class DuoNodePlugin extends AbstractNodeAmPlugin {
      */
 	@Override
 	protected Map<String, Iterable<? extends Class<? extends Node>>> getNodesByVersion() {
-		return Collections.singletonMap(DuoNodePlugin.currentVersion, 
-				Collections.singletonList(DuoNode.class));
+		return Collections.singletonMap(DuoNodePlugin.currentVersion,
+				ImmutableList.of(DuoNode.class, DuoUniversalPromptNode.class));
 	}
 
     /** 
@@ -106,6 +108,8 @@ public class DuoNodePlugin extends AbstractNodeAmPlugin {
      */	
 	@Override
 	public void upgrade(String fromVersion) throws PluginException {
+		pluginTools.upgradeAuthNode(DuoNode.class);
+		pluginTools.installAuthNode(DuoUniversalPromptNode.class);
 		super.upgrade(fromVersion);
 	}
 
