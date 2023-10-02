@@ -29,7 +29,7 @@
         <junit.version>4.12</junit.version>
         <mockito.version>3.12.4</mockito.version>
         <mockito-testng.version>0.4.13</mockito-testng.version>
-        <forgerockDistMgmtReleasesUrl>https://maven.forgerock.org/repo/internal-releases</forgerockDistMgmtReleasesUrl>
+        <forgerockDistMgmtReleasesUrl>https://maven.forgerock.org/artifactory/internal-releases</forgerockDistMgmtReleasesUrl>
     </properties>
 
     <groupId>org.forgerock.duo</groupId>
@@ -44,7 +44,7 @@
         <repository>
             <id>forgerock-internal-releases</id>
             <name>ForgeRock Internal Release Repository</name>
-            <url>https://maven.forgerock.org/repo/internal-releases</url>
+            <url>https://maven.forgerock.org/artifactory/internal-releases</url>
         </repository>
     </distributionManagement>
 
@@ -56,7 +56,7 @@
         </repository>
         <repository>
             <id>forgerock-private-releases</id>
-            <url>https://maven.forgerock.org/repo/private-releases</url>
+            <url>https://maven.forgerock.org/artifactory/private-releases</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -64,7 +64,7 @@
         <repository>
             <id>forgerock-internal-releases</id>
             <name>ForgeRock Internal Releases Repository</name>
-            <url>https://maven.forgerock.org/repo/internal-releases</url>
+            <url>https://maven.forgerock.org/artifactory/internal-releases</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
