@@ -21,12 +21,9 @@ import static org.forgerock.duo.duoNode.DuoConstants.SETUP_DOM_SCRIPT;
 import static org.forgerock.duo.duoNode.DuoConstants.STYLE_SCRIPT;
 import static org.forgerock.openam.auth.node.api.Action.send;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -121,12 +118,10 @@ public class DuoNode extends AbstractDecisionNode {
             }
             return buildCallbacks(username);
         } catch(Exception ex) {
-			logger.error(loggerPrefix + "Exception occurred: " + ex.getStackTrace());
-			context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			ex.printStackTrace(pw);
-			context.getStateFor(this).putShared(loggerPrefix + "StackTracke", new Date() + ": " + sw.toString());
+			String stackTrace = org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(ex);
+			logger.error(loggerPrefix + "Exception occurred: ", ex);
+			context.getStateFor(this).putTransient(loggerPrefix + "Exception", ex.getMessage());
+			context.getStateFor(this).putTransient(loggerPrefix + "StackTrace", stackTrace);
             return Action.goTo("error").build();
         }
     }
