@@ -59,7 +59,7 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class DuoNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "2.3.12";
+	static private String currentVersion = "2.3.14";
 	static final String logAppender = "[Version: " + currentVersion + "][Marketplace] ";
 	
     /** 
