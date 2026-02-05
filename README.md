@@ -13,7 +13,99 @@
  *
  * Copyright ${data.get('yyyy')} ForgeRock AS.
 -->
-# Duo Node
+
+# Duo Authentication Nodes for Ping Identity
+
+This README describes the **Duo Universal Prompt node** (current and recommended) and the **Duo node (deprecated)** for integrating Duo two-factor authentication into Ping Identity authentication journeys.
+
+---
+
+## Duo Universal Prompt Node (Recommended)
+
+The **Duo Universal Prompt node** integrates with the Duo service to provide two-factor authentication using Duo’s **Universal Prompt** interface. This node uses the **Duo Web v4 SDK** and replaces the deprecated Duo node that relied on Duo’s Traditional Prompt.
+
+The node redirects users to the Duo service, where they complete registration or authentication, and then returns them to the Ping Identity journey.
+
+---
+
+## Example Journey
+
+In a typical authentication journey:
+
+1. The user reaches the Duo Universal Prompt node.
+2. The node redirects the user to the Duo service.
+3. The user completes Duo registration or authentication.
+4. Duo redirects the user back to Ping Identity.
+5. The journey resumes based on the authentication result.
+
+---
+
+## Availability
+
+| Product | Available |
+|--------|-----------|
+| PingOne Advanced Identity Cloud | Yes |
+| PingAM (self-managed) | Yes |
+| Ping Identity Platform (self-managed) | Yes |
+
+---
+
+## Inputs
+
+The Duo Universal Prompt node requires the following inbound data:
+
+| Description | Attribute Name | Source |
+|------------|----------------|--------|
+| Username | `username` | Shared State |
+
+---
+
+## Dependencies
+
+Before using this node:
+
+- You must have a Duo account.
+- PingOne Advanced Identity Cloud must be integrated with the Duo authentication service.
+- This node replaces the deprecated Duo node that used Duo’s Traditional Prompt.
+
+---
+
+## Configuration
+
+The following properties are configurable:
+
+| Property | Description |
+|--------|-------------|
+| Client ID | The client ID provided by Duo |
+| Client Secret | The client secret provided by Duo |
+| API Hostname | The Duo API hostname |
+| Failure Mode When Duo Is Down | Determines behavior when Duo health checks fail:<br>• **OPEN** – Skip two-factor authentication and proceed to the **True** outcome<br>• **CLOSED** – Fail authentication and proceed to the **False** outcome |
+| OpenAM Callback URL | Callback URL used to return to Ping Identity and resume the journey |
+
+---
+
+## Outputs
+
+- If an **Error** outcome occurs, the error message is written to the shared state.
+
+---
+
+## Outcomes
+
+| Outcome | Description |
+|--------|-------------|
+| True | Duo authentication succeeded |
+| False | Duo authentication failed |
+| Error | An error occurred during authentication |
+
+---
+
+## Duo Node (Deprecated)
+
+> **Deprecated**  
+> Ping Identity has deprecated the Duo node because Duo has deprecated the **Traditional Duo Prompt**.  
+> Use the **Duo Universal Prompt node** instead.
+
 
 A Duo integration for ForgeRock's Identity Platform 7.0 and ForgeRock Identity Cloud. This integration handles:
 1. Registration of the users device
