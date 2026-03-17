@@ -8,10 +8,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.AbstractDecisionNode;
@@ -36,30 +43,29 @@ import com.sun.identity.sm.RequiredValueValidator;
 
 @Node.Metadata(outcomeProvider = DuoUniversalPromptNode.OutcomeProvider.class, configClass = DuoUniversalPromptNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
 public class DuoUniversalPromptNode extends AbstractDecisionNode {
+
     public enum FailureModes {
         CLOSED,
         OPEN,
     }
 
     private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
-
     private String loggerPrefix = "[Duo Universal Prompt]" + DuoNodePlugin.logAppender;
 
-    private Client duoClient;
-    private String clientId;
-    private String clientSecret;
-    private String apiHostName;
-    private String callbackUri;
-    private FailureModes failureMode;
+    private final Client duoClient;
+    private final FailureModes failureMode;
 
     @Inject
-    public DuoUniversalPromptNode(@Assisted Config config, CoreWrapper coreWrapper) throws NodeProcessException {
-        clientId = config.clientId();
-        clientSecret = config.clientSecret();
-        apiHostName = config.apiHostName();
-        callbackUri = config.callbackUri();
-        failureMode = config.failureMode();
-        duoClient = initializeDuoClient();
+    public DuoUniversalPromptNode(@Assisted Config config,
+                                  CoreWrapper coreWrapper,
+                                  DuoClientCache duoClientCache) throws NodeProcessException {
+        this.failureMode = config.failureMode();
+        this.duoClient = duoClientCache.getClient(
+                config.clientId(),
+                config.clientSecret(),
+                config.apiHostName(),
+                config.callbackUri()
+        );
     }
 
     @Override
@@ -67,7 +73,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         try {
             logger.debug(loggerPrefix + "Started");
             Map<String, List<String>> parameters = context.request.parameters;
-            
+
             NodeState ns = context.getStateFor(this);
             String userReference = ns.get(SharedStateConstants.USERNAME).asString().toLowerCase();
 
@@ -85,10 +91,8 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
             if (parameters.containsKey(DuoUniversalPromptConstants.RESP_DUO_CODE) && parameters.containsKey(
                     DuoUniversalPromptConstants.RESP_STATE)) {
-
                 try {
                     Boolean authenticated = validateCallback(parameters, ns, userReference);
-
                     return goTo(authenticated).build();
                 } catch (InvalidStateError e) {
                     // This exception is resolvable by starting the Duo flow over.
@@ -108,25 +112,16 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             redirectCallback.setTrackingCookie(true);
 
             return Action.send(redirectCallback).build();
+
         } catch(Exception ex) {
             logger.error(loggerPrefix + "Exception occurred: " + ex.getStackTrace());
             context.getStateFor(this).putShared(loggerPrefix + "Exception", new Date() + ": " + ex.getMessage());
+
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             ex.printStackTrace(pw);
             context.getStateFor(this).putShared(loggerPrefix + "StackTrace", new Date() + ": " + sw.toString());
             return Action.goTo("error").build();
-        }
-    }
-
-    private Client initializeDuoClient() throws NodeProcessException {
-    	logger.debug(loggerPrefix + "Initializing Duo Client");
-        Client.Builder duoClient = new Client.Builder(clientId, clientSecret, apiHostName, callbackUri);
-
-        try {
-            return duoClient.build();
-        } catch (Exception e) {
-            throw new NodeProcessException(loggerPrefix + "Could not initialize Duo client. This probably indicates invalid configuration for the auth node.", e);
         }
     }
 
@@ -148,7 +143,6 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         if (! sharedState.isDefined(DuoUniversalPromptConstants.SESSION_STATE)) {
             throw new InvalidStateError(loggerPrefix + "Detected Duo callback without initialized session. This may be a spoofing attempt (or a timed out session).");
         }
-
         String state = sharedState.get(DuoUniversalPromptConstants.SESSION_STATE).asString();
         String stateFromDuoCallback = parameters.get(DuoUniversalPromptConstants.RESP_STATE).get(0);
         String duoCode = parameters.get(DuoUniversalPromptConstants.RESP_DUO_CODE).get(0);
@@ -157,7 +151,6 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         if (! state.equals(stateFromDuoCallback)) {
             throw new InvalidStateError(loggerPrefix + "Detected Duo callback with invalid session. This may be a spoofing attempt (or a timed out session).");
         }
-
         return validateDuoAuthenticated(duoCode, userReference);
     }
 
@@ -174,6 +167,86 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             throw new NodeProcessException("Unable to exchange authorization code for result", e);
         }
     }
+
+    /**
+     * Singleton cache for Duo clients.
+     */
+    @Singleton
+    public static class DuoClientCache {
+        private static final Logger logger = LoggerFactory.getLogger(DuoClientCache.class);
+
+        private final LoadingCache<DuoClientKey, Client> cache =
+                CacheBuilder.newBuilder()
+                        .build(CacheLoader.from(this::read));
+
+        public Client getClient(String clientId,
+                                String clientSecret,
+                                String apiHostName,
+                                String callbackUri) throws NodeProcessException {
+
+            DuoClientKey key = new DuoClientKey(clientId, clientSecret, apiHostName, callbackUri);
+
+            try {
+                return cache.get(key);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof NodeProcessException) {
+                    throw (NodeProcessException) cause;
+                }
+                throw new NodeProcessException("Unable to get Duo client from cache", e);
+            }
+        }
+
+        private Client read(DuoClientKey key) {
+            logger.error("Duo Node Initializing client for host={}", key.apiHostName);
+            try {
+                return new Client.Builder(
+                        key.clientId,
+                        key.clientSecret,
+                        key.apiHostName,
+                        key.callbackUri
+                ).build();
+            } catch (Exception e) {
+                logger.error("Error initializing Duo Node Initializing client for host={}", key.apiHostName);
+            }
+        }
+    }
+
+    private static final class DuoClientKey {
+        private final String clientId;
+        private final String clientSecret;
+        private final String apiHostName;
+        private final String callbackUri;
+
+        private DuoClientKey(String clientId, String clientSecret, String apiHostName, String callbackUri) {
+            this.clientId = clientId;
+            this.clientSecret = clientSecret;
+            this.apiHostName = apiHostName;
+            this.callbackUri = callbackUri;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof DuoClientKey)) {
+                return false;
+            }
+            DuoClientKey that = (DuoClientKey) o;
+            return Objects.equals(clientId, that.clientId)
+                    && Objects.equals(clientSecret, that.clientSecret)
+                    && Objects.equals(apiHostName, that.apiHostName)
+                    && Objects.equals(callbackUri, that.callbackUri);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(clientId, clientSecret, apiHostName, callbackUri);
+        }
+    }
+
+
 
     /**
      * Configuration for the Duo node.
@@ -193,7 +266,6 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             return FailureModes.CLOSED;
         }
 
-        //TODO This is not working properly in the cloud
         @Attribute(order = 500, validators = RequiredValueValidator.class)
         default String callbackUri() {
             final String protocol = SystemProperties.get(Constants.AM_SERVER_PROTOCOL);
@@ -208,10 +280,8 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             return "";
         }
     }
+
     public static final class OutcomeProvider implements org.forgerock.openam.auth.node.api.OutcomeProvider {
-        /**
-         * Outcomes Ids for this node.
-         */
         static final String SUCCESS_OUTCOME = "true";
         static final String ERROR_OUTCOME = "error";
         static final String FALSE_OUTCOME = "false";
@@ -219,13 +289,10 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
         @Override
         public List<Outcome> getOutcomes(PreferredLocales locales, JsonValue nodeAttributes) {
-
             ResourceBundle bundle = locales.getBundleInPreferredLocale(BUNDLE, OutcomeProvider.class.getClassLoader());
 
             List<Outcome> results = new ArrayList<>(
-                    Arrays.asList(
-                            new Outcome(SUCCESS_OUTCOME, "True")
-                    )
+                    Arrays.asList(new Outcome(SUCCESS_OUTCOME, "True"))
             );
             results.add(new Outcome(FALSE_OUTCOME, "False"));
             results.add(new Outcome(ERROR_OUTCOME, "Error"));
