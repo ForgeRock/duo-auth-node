@@ -120,6 +120,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
     }
 
     private Client initializeDuoClient() throws NodeProcessException {
+    	logger.debug(loggerPrefix + "Initializing Duo Client");
         Client.Builder duoClient = new Client.Builder(clientId, clientSecret, apiHostName, callbackUri);
 
         try {
