@@ -32,7 +32,7 @@ import org.forgerock.openam.core.CoreWrapper;
 import org.forgerock.util.i18n.PreferredLocales;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.concurrent.TimeUnit;
 import com.duosecurity.Client;
 import com.duosecurity.model.Token;
 import com.google.inject.assistedinject.Assisted;
@@ -176,8 +176,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         private static final Logger logger = LoggerFactory.getLogger(DuoClientCache.class);
 
         private final LoadingCache<DuoClientKey, Client> cache =
-                CacheBuilder.newBuilder()
-                        .build(CacheLoader.from(this::read));
+                CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(30, TimeUnit.MINUTES).build(CacheLoader.from(this::read));
 
         public Client getClient(String clientId,
                                 String clientSecret,
@@ -189,6 +188,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             try {
                 return cache.get(key);
             } catch (Exception e) {
+            	cache.invalidate(key);
                 Throwable cause = e.getCause();
                 if (cause instanceof NodeProcessException) {
                     throw (NodeProcessException) cause;
@@ -197,7 +197,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             }
         }
 
-        private Client read(DuoClientKey key) {
+        private Client read(DuoClientKey key)  {
             logger.error("Duo Node Initializing client for host={}", key.apiHostName);
             try {
                 return new Client.Builder(
@@ -207,7 +207,11 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
                         key.callbackUri
                 ).build();
             } catch (Exception e) {
-                logger.error("Error initializing Duo Node Initializing client for host={}", key.apiHostName);
+                cache.invalidate(key); 
+                throw new RuntimeException(
+		                new NodeProcessException("Failed to initialize Duo client", e)
+		        );
+
             }
         }
     }
