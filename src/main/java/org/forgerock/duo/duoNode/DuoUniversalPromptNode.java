@@ -52,14 +52,24 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
     private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
     private String loggerPrefix = "[Duo Universal Prompt]" + DuoNodePlugin.logAppender;
 
-    private final Client duoClient;
-    private final FailureModes failureMode;
+   private final Client duoClient;
+	private final DuoClientCache duoClientCache;
+	private final String clientId;
+	private final String clientSecret;
+	private final String apiHostName;
+	private final String callbackUri;
+	private final FailureModes failureMode;
 
     @Inject
     public DuoUniversalPromptNode(@Assisted Config config,
                                   CoreWrapper coreWrapper,
                                   DuoClientCache duoClientCache) throws NodeProcessException {
         this.failureMode = config.failureMode();
+	    this.duoClientCache = duoClientCache;
+	    this.clientId = config.clientId();
+	    this.clientSecret = config.clientSecret();
+	    this.apiHostName = config.apiHostName();
+	    this.callbackUri = config.callbackUri();
         this.duoClient = duoClientCache.getClient(
                 config.clientId(),
                 config.clientSecret(),
@@ -80,6 +90,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
             try {
                 duoClient.healthCheck();
             } catch (Exception e) {
+            	duoClientCache.invalidate(clientId, clientSecret, apiHostName, callbackUri);
                 if (failureMode.equals(FailureModes.CLOSED)) {
                     throw new NodeProcessException(loggerPrefix + "Duo health check failed. Cannot proceed when failure mode closed is configured.", e);
                 }
@@ -176,7 +187,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         private static final Logger logger = LoggerFactory.getLogger(DuoClientCache.class);
 
         private final LoadingCache<DuoClientKey, Client> cache =
-                CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(30, TimeUnit.MINUTES).build(CacheLoader.from(this::read));
+                CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(5, TimeUnit.MINUTES).build(CacheLoader.from(this::read));
 
         public Client getClient(String clientId,
                                 String clientSecret,
@@ -214,6 +225,16 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 
             }
         }
+        public void invalidate(String clientId,
+                       String clientSecret,
+                       String apiHostName,
+                       String callbackUri) {
+		    cache.invalidate(new DuoClientKey(clientId, clientSecret, apiHostName, callbackUri));
+		}
+
+		public void invalidate(DuoClientKey key) {
+		    cache.invalidate(key);
+		}
     }
 
     private static final class DuoClientKey {
