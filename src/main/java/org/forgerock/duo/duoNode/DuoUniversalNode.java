@@ -41,15 +41,15 @@ import com.sun.identity.authentication.spi.RedirectCallback;
 import com.sun.identity.shared.Constants;
 import com.sun.identity.sm.RequiredValueValidator;
 
-@Node.Metadata(outcomeProvider = DuoUniversalPromptNode.OutcomeProvider.class, configClass = DuoUniversalPromptNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
-public class DuoUniversalPromptNode extends AbstractDecisionNode {
+@Node.Metadata(outcomeProvider = DuoUniversalNode.OutcomeProvider.class, configClass = DuoUniversalNode.Config.class, tags = {"multi-factor authentication", "marketplace", "trustnetwork"})
+public class DuoUniversalNode extends AbstractDecisionNode {
 
     public enum FailureModes {
         CLOSED,
         OPEN,
     }
 
-    private final Logger logger = LoggerFactory.getLogger(DuoUniversalPromptNode.class);
+    private final Logger logger = LoggerFactory.getLogger(DuoUniversalNode.class);
     private String loggerPrefix = "[Duo Universal Prompt]" + DuoNodePlugin.logAppender;
 
    private final Client duoClient;
@@ -61,7 +61,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
 	private final FailureModes failureMode;
 
     @Inject
-    public DuoUniversalPromptNode(@Assisted Config config,
+    public DuoUniversalNode(@Assisted Config config,
                                   CoreWrapper coreWrapper,
                                   DuoClientCache duoClientCache) throws NodeProcessException {
         this.failureMode = config.failureMode();
@@ -310,7 +310,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         static final String SUCCESS_OUTCOME = "true";
         static final String ERROR_OUTCOME = "error";
         static final String FALSE_OUTCOME = "false";
-        private static final String BUNDLE = DuoUniversalPromptNode.class.getName();
+        private static final String BUNDLE = DuoUniversalNode.class.getName();
 
         @Override
         public List<Outcome> getOutcomes(PreferredLocales locales, JsonValue nodeAttributes) {

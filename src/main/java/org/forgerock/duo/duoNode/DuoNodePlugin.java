@@ -59,7 +59,7 @@ import org.forgerock.openam.plugins.PluginException;
  */
 public class DuoNodePlugin extends AbstractNodeAmPlugin {
 
-	static private String currentVersion = "2.3.14";
+	static private String currentVersion = "2.3.21";
 	static final String logAppender = "[Version: " + currentVersion + "][Marketplace] ";
 	
     /** 
@@ -71,7 +71,7 @@ public class DuoNodePlugin extends AbstractNodeAmPlugin {
 	@Override
 	protected Map<String, Iterable<? extends Class<? extends Node>>> getNodesByVersion() {
 		return Collections.singletonMap(DuoNodePlugin.currentVersion,
-				ImmutableList.of(DuoNode.class, DuoUniversalPromptNode.class));
+				ImmutableList.of(DuoNode.class, DuoUniversalPromptNode.class, DuoUniversalNode.class));
 	}
 
     /** 
@@ -110,6 +110,7 @@ public class DuoNodePlugin extends AbstractNodeAmPlugin {
 	public void upgrade(String fromVersion) throws PluginException {
 		pluginTools.upgradeAuthNode(DuoNode.class);
 		pluginTools.installAuthNode(DuoUniversalPromptNode.class);
+        pluginTools.installAuthNode(DuoUniversalNode.class);
 		super.upgrade(fromVersion);
 	}
 
