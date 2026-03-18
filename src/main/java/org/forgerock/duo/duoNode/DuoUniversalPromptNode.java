@@ -198,7 +198,7 @@ public class DuoUniversalPromptNode extends AbstractDecisionNode {
         }
 
         private Client read(DuoClientKey key)  {
-            logger.error("Duo Node Initializing client for host={}", key.apiHostName);
+            logger.debug("[Duo Universal Prompt] Duo Node Initializing client");
             try {
                 return new Client.Builder(
                         key.clientId,
